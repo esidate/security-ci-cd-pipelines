@@ -2,7 +2,7 @@
 
 :warning: Under construction
 
-A bunch of SAST pipeline definitions for Gitlab CI/CD
+A bunch of SAST/SCA pipeline definitions for Gitlab CI/CD
 
 ```sh
 .
