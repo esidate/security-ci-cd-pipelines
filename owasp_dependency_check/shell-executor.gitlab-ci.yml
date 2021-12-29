@@ -10,7 +10,7 @@ owasp_dependency_check:
     - java -version
     - wget https://github.com/jeremylong/DependencyCheck/releases/download/v6.5.1/dependency-check-6.5.1-release.zip
     - unzip dependency-check-6.5.1-release.zip
-    - dependency-check/bin/dependency-check.sh --scan . --format ALL --project $CI_PROJECT_NAME --failOnCVSS 0
+    - ./dependency-check/bin/dependency-check.sh --scan . --format ALL --project $CI_PROJECT_NAME --failOnCVSS 0
     - if [ $(grep -c "vulnerabilities" dependency-check-report.json) -gt 0 ]; then exit 1; fi
   allow_failure: true
   artifacts:
