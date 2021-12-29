@@ -1,5 +1,5 @@
 # Useful when only the shell executor is available
-# Java must be installed in the runner
+# Needs java and unzip to be installed in the runner
 
 stages:
   - deps_check
@@ -11,6 +11,7 @@ owasp_dependency_check:
   stage: deps_check
   script:
     - java -version
+    - unzip -v
     - wget https://github.com/jeremylong/DependencyCheck/releases/download/v$DEPENDENCY_CHECK_VERSION/dependency-check-$DEPENDENCY_CHECK_VERSION-release.zip
     - unzip dependency-check-$DEPENDENCY_CHECK_VERSION-release.zip
     - ./dependency-check/bin/dependency-check.sh --scan . --format ALL --project $CI_PROJECT_NAME --failOnCVSS 0
