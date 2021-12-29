@@ -1,4 +1,4 @@
-# Useful when only the shell executor is available
+# Useful when only the shell executor is available and the runner doesn't have access to external docker repositories
 # Needs java and unzip to be installed in the runner
 
 stages:
