@@ -1,0 +1,17 @@
+stages:
+  - sast
+
+code_scan:
+  stage: sast
+  image:
+    name: horuszup/horusec-cli:latest
+    entrypoint: [""]
+  script:
+    - horusec start -p $(pwd) -e="true" -G="true" --disable-docker="true" | tee -a horusec_artifact.txt
+  allow_failure: true
+  artifacts:
+    when: always
+    paths:
+      - horusec_artifact.txt
+  tags:
+    - docker
