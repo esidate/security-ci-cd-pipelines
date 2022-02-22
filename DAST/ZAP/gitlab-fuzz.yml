@@ -1,0 +1,24 @@
+stages:
+  - dast
+
+variables:
+  FUZZAPI_OPENAPI: https://staging.example.com/openapi.json
+  FUZZAPI_TARGET_URL: https://staging.example.com
+  GITLAB_FEATURES: api_fuzzing dast
+
+fuzz_api:
+  stage: dast
+  image: registry.gitlab.com/gitlab-org/security-products/analyzers/api-fuzzing:1
+  allow_failure: true
+  script:
+    - /peach/analyzer-fuzz-api
+  artifacts:
+    when: always
+    paths:
+      - gl-assets
+      - gl-api-fuzzing-report.json
+      - gl-*.log
+    reports:
+      dast: gl-api-fuzzing-report.json
+  tags:
+    - docker
