@@ -1,0 +1,19 @@
+stages:
+  - deps_check
+
+owasp_dependency_check:
+  image:
+    name: registry.gitlab.com/gitlab-ci-utils/docker-dependency-check:latest
+    entrypoint: [""]
+  stage: deps_check
+  allow_failure: true
+  script:
+    - /usr/share/dependency-check/bin/dependency-check.sh --scan "./" --format ALL --project "$CI_PROJECT_NAME" --failOnCVSS 0
+    - if [ $(grep -c "vulnerabilities" dependency-check-report.json) -gt 0 ]; then exit 1; fi
+  artifacts:
+    when: always
+    paths:
+      - "./dependency-check-report.html"
+      - "./dependency-check-report.json"
+  tags:
+    - docker
