@@ -1,0 +1,17 @@
+stages:
+  - sast
+
+secret_leaks:
+  stage: sast
+  image:
+    name: zricethezav/gitleaks:latest
+    entrypoint: [""]
+  allow_failure: true
+  script:
+    - /usr/bin/gitleaks detect --source=$(pwd) -v -f json -r ./leaks-report.json
+  artifacts:
+    when: always
+    paths:
+      - "./leaks-report.json"
+  tags:
+    - docker
