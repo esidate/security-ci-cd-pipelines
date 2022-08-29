@@ -1,0 +1,37 @@
+stages:
+  - test
+
+# Java, .NET, OpenSSL, Swift, Objective-C, Python, PHP, Node.js, Ruby, Go, Perl, C, C++
+owasp-dependency-check-docker:
+  stage: test
+  allow_failure: true
+  image:
+    name: registry.gitlab.com/gitlab-ci-utils/docker-dependency-check:latest
+    entrypoint: [""]
+  script:
+    - /usr/share/dependency-check/bin/dependency-check.sh --scan "./" --format ALL --project "$CI_PROJECT_NAME" --failOnCVSS 0
+    - if [ $(grep -c "vulnerabilities" dependency-check-report.json) -gt 0 ]; then exit 1; fi
+  artifacts:
+    when: always
+    paths:
+      - "./dependency-check-report.html"
+      - "./dependency-check-report.json"
+
+# Java, .NET, OpenSSL, Swift, Objective-C, Python, PHP, Node.js, Ruby, Go, Perl, C, C++
+owasp-dependency-check-shell:
+  stage: test
+  allow_failure: true
+  variables:
+    DEPENDENCY_CHECK_VERSION: "6.5.1"
+  script:
+    - java -version
+    - unzip -v
+    - wget https://github.com/jeremylong/DependencyCheck/releases/download/v$DEPENDENCY_CHECK_VERSION/dependency-check-$DEPENDENCY_CHECK_VERSION-release.zip
+    - unzip dependency-check-$DEPENDENCY_CHECK_VERSION-release.zip
+    - ./dependency-check/bin/dependency-check.sh --scan . --format ALL --project $CI_PROJECT_NAME --failOnCVSS 0
+    - if [ $(grep -c "vulnerabilities" dependency-check-report.json) -gt 0 ]; then exit 1; fi
+  artifacts:
+    when: always
+    paths:
+      - "./dependency-check-report.html"
+      - "./dependency-check-report.json"

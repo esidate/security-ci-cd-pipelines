@@ -1,0 +1,97 @@
+stages:
+  - test
+
+# Terraform, Terraform plan, Cloudformation, AWS SAM, Kubernetes, Helm charts, Kustomize, Dockerfile, Serverless, Bicep, OpenAPI or ARM Templates
+checkov:
+  stage: test
+  allow_failure: true
+  image:
+    name: bridgecrew/checkov:latest
+    entrypoint:
+      - "/usr/bin/env"
+      - "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  rules:
+    - if: $SAST_DISABLED
+      when: never
+    - if: $CI_COMMIT_BRANCH
+      exists:
+        - "**/*.yml"
+        - "**/*.yaml"
+        - "**/*.json"
+        - "**/*.template"
+        - "**/*.tf"
+        - "**/serverless.yml"
+        - "**/serverless.yaml"
+  script:
+    - checkov -d . -o junitxml | tee checkov.test.xml
+  artifacts:
+    reports:
+      junit: "checkov.test.xml"
+    paths:
+      - "checkov.test.xml"
+
+# Terraform, CDKTF, Terraform plan, Cloudformation, AWS SAM, Ansible, Docker, Kubernetes, Helm, Azure Resource Manager, Azure Blueprints, Google Deployment Manager, gRPC, Open API, Secret detection
+kics:
+  stage: test
+  allow_failure: true
+  image:
+    name: checkmarx/kics:latest
+    entrypoint: [""]
+  script:
+    - kics scan -q /app/bin/assets/queries -p ${PWD} --ignore-on-exit all --report-formats glsast -o ${PWD} --output-name kics-results
+  artifacts:
+    reports:
+      sast: gl-sast-kics-results.json
+    when: always
+
+# Kubernetes
+kubeaudit:
+  stage: test
+  allow_failure: true
+  image: docker:stable
+  services:
+    - docker:18.09.7-dind
+  script:
+    - touch result
+    - >
+      for file in $(find . -name '*.yaml' -type f -print) ; do
+        echo "$file"
+        docker run --workdir="/src" -v $(pwd):/src shopify/kubeaudit:latest all --exitcode 0 -f $file | tee -a result
+      done
+    - >
+      if grep -q "error" result;
+      then
+        exit 1;
+      fi
+  artifacts:
+    when: always
+    paths:
+      - result
+
+# Kubernetes
+kube-score:
+  stage: test
+  allow_failure: true
+  image: docker:stable
+  services:
+    - docker:18.09.7-dind
+  script:
+    - docker run -v $(pwd):/project zegl/kube-score:latest score $(find . -name '*.yaml' -type f -print)
+
+# Terraform
+terrascan:
+  stage: sast
+  allow_failure: true
+  image: accurics/terrascan
+  script:
+    - terrascan scan
+
+# Terraform
+tfsec:
+  stage: test
+  allow_failure: true
+  image: aquasec/tfsec
+  variables:
+    TF_VARIABLES_NAME: tf-vars
+  script:
+    - tfsec --tfvars-file=$TF_VARIABLES_NAME.tfvars .

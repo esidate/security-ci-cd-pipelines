@@ -1,17 +1,16 @@
 stages:
-  - sast
+  - test
 
-code_scan:
-  stage: sast
+# C#, Java, Kotlin, Python, Ruby, Golang, Terraform, Javascript, Typescript, Kubernetes, PHP, C, HTML, JSON, Dart, Elixir, Shell, Nginx, Key leaks
+horusec:
+  stage: test
+  allow_failure: true
   image:
     name: horuszup/horusec-cli:latest
     entrypoint: [""]
   script:
     - horusec start -p $(pwd) -e="true" -G="true" --disable-docker="true" | tee -a horusec_artifact.txt
-  allow_failure: true
   artifacts:
     when: always
     paths:
       - horusec_artifact.txt
-  tags:
-    - docker
